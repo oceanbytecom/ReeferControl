@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reefer Control — Download</title>
+<meta name="description" content="Reefer Control — refrigerated container monitoring app for Android. Track temperatures, manage alarms, control spare parts stock."/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:#ffffff;
+  color:#1a1a2e;
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── PALETTE (from app) ── */
+:root{
+  --navy:   #1a3a6e;
+  --navy2:  #153060;
+  --card-bg:#dce8f0;
+  --card-bg2:#e8f1f6;
+  --bg:     #f4f7fa;
+  --white:  #ffffff;
+  --text:   #1a1a2e;
+  --muted:  #6b7c93;
+  --border: #ccdce8;
+  --red:    #e53935;
+  --orange: #f57c00;
+  --green:  #2e7d32;
+  --red-bg: #fdecea;
+  --or-bg:  #fff3e0;
+  --gr-bg:  #e8f5e9;
+  --radius: 14px;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:58px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-icon{
+  width:34px;height:34px;border-radius:8px;
+  background:var(--navy);
+  display:flex;align-items:center;justify-content:center;
+}
+.nav-icon img{width:26px;height:26px;object-fit:contain}
+.nav-name{font-size:15px;font-weight:600;color:var(--navy)}
+.nav-links{display:flex;gap:1.5rem;align-items:center}
+.nav-links a{font-size:13px;color:var(--white);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--navy)}
+.btn-nav{
+  background:var(--navy);color:#fff;
+  font-size:13px;font-weight:500;
+  padding:7px 18px;border-radius:8px;
+  text-decoration:none;
+  transition:background .15s;
+}
+.btn-nav:hover{background:var(--navy2);color:#fff}
+
+/* ── HERO ── */
+.hero{
+  padding:100px 2rem 0;
+  max-width:1100px;margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:3rem;
+  align-items:center;
+  min-height:90vh;
+}
+.hero-left{}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:500;
+  color:var(--navy);
+  background:var(--card-bg);
+  padding:4px 12px;border-radius:20px;
+  margin-bottom:1.25rem;
+}
+.hero-tag svg{width:13px;height:13px}
+h1{
+  font-size:clamp(2rem,4vw,3rem);
+  font-weight:700;
+  letter-spacing:-0.025em;
+  line-height:1.15;
+  color:var(--text);
+  margin-bottom:1rem;
+}
+h1 em{font-style:normal;color:var(--navy)}
+.hero-sub{
+  font-size:16px;color:var(--muted);
+  max-width:440px;line-height:1.7;
+  margin-bottom:2rem;
+}
+.btn-download{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--navy);
+  color:#fff;
+  font-size:15px;font-weight:600;
+  padding:14px 28px;
+  border-radius:12px;
+  text-decoration:none;
+  border:none;cursor:pointer;
+  transition:background .15s, transform .1s;
+  box-shadow:0 4px 20px rgba(26,58,110,0.25);
+}
+.btn-download:hover{background:var(--navy2);transform:translateY(-1px)}
+.btn-download svg{flex-shrink:0}
+.dl-meta{
+  margin-top:.75rem;
+  font-size:12px;color:var(--muted);
+  display:flex;align-items:center;gap:6px;
+}
+.dl-meta span{
+  background:var(--gr-bg);color:var(--green);
+  padding:2px 8px;border-radius:6px;font-weight:500;font-size:11px;
+}
+
+/* ── PHONE MOCKUP ── */
+.hero-right{
+  display:flex;justify-content:center;
+  padding-bottom:2rem;
+  position:relative;
+}
+.phones{
+  display:flex;gap:-20px;
+  position:relative;
+}
+.phone{
+  width:200px;
+  border-radius:28px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(26,58,110,0.18), 0 4px 16px rgba(0,0,0,0.1);
+  border:2px solid rgba(255,255,255,0.8);
+  background:#fff;
+  flex-shrink:0;
+}
+.phone img{width:100%;display:block}
+.phone:first-child{
+  transform:rotate(-4deg) translateX(24px) translateY(12px);
+  z-index:1;
+}
+.phone:last-child{
+  transform:rotate(3deg) translateX(-8px);
+  z-index:2;
+}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  background:var(--card-bg);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.stats-inner{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding:.1rem 2rem;
+}
+.stat{
+  padding:1.5rem 1rem;
+  text-align:center;
+  border-right:1px solid var(--border);
+}
+.stat:last-child{border-right:none}
+.stat-n{
+  font-size:26px;font-weight:700;
+  color:var(--navy);display:block;
+  letter-spacing:-0.02em;
+}
+.stat-l{font-size:12px;color:var(--muted);margin-top:2px;display:block}
+
+/* ── SECTION ── */
+.section{padding:80px 2rem;max-width:1100px;margin:0 auto}
+.section-tag{
+  font-size:11px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--navy);margin-bottom:.75rem;
+}
+h2{
+  font-size:clamp(1.5rem,3vw,2.2rem);
+  font-weight:700;letter-spacing:-0.02em;
+  margin-bottom:1rem;line-height:1.2;
+}
+.sub{font-size:15px;color:var(--muted);max-width:500px;line-height:1.7;margin-bottom:2.5rem}
+
+/* ── STATUS CARDS (from app stats screen) ── */
+.status-row{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;margin-bottom:2.5rem;
+}
+.status-card{
+  border-radius:var(--radius);
+  padding:1.25rem 1rem;text-align:center;
+  border:1.5px solid;
+}
+.status-card.red{background:var(--red-bg);border-color:#f5c6c6;color:var(--red)}
+.status-card.orange{background:var(--or-bg);border-color:#ffd59e;color:var(--orange)}
+.status-card.green{background:var(--gr-bg);border-color:#a5d6a7;color:var(--green)}
+.status-card .n{font-size:2rem;font-weight:700;display:block}
+.status-card .l{font-size:12px;font-weight:500;margin-top:2px}
+
+/* ── FEATURES GRID ── */
+.features{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:12px;
+}
+.feat{
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  transition:background .15s;
+}
+.feat:hover{background:var(--card-bg2)}
+.feat-icon{
+  width:42px;height:42px;
+  border-radius:10px;
+  background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  margin-bottom:1rem;
+  box-shadow:0 2px 8px rgba(26,58,110,0.1);
+}
+.feat h3{font-size:14px;font-weight:600;margin-bottom:.4rem}
+.feat p{font-size:13px;color:var(--muted);line-height:1.55}
+
+/* ── SCREENS SHOWCASE ── */
+.screens{
+  display:flex;gap:1.5rem;
+  overflow-x:auto;
+  padding-bottom:1rem;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+}
+.screens::-webkit-scrollbar{height:4px}
+.screens::-webkit-scrollbar-track{background:var(--card-bg);border-radius:2px}
+.screens::-webkit-scrollbar-thumb{background:var(--navy);border-radius:2px}
+.screen-card{
+  flex-shrink:0;
+  scroll-snap-align:start;
+  width:200px;
+}
+.screen-card img{
+  width:100%;border-radius:20px;
+  box-shadow:0 12px 40px rgba(26,58,110,0.15);
+  border:2px solid #fff;
+  display:block;
+}
+.screen-label{
+  margin-top:.6rem;
+  font-size:12px;font-weight:500;
+  color:var(--muted);text-align:center;
+}
+
+/* ── INSTALL STEPS ── */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{
+  display:grid;grid-template-columns:52px 1fr;
+  gap:0 1rem;position:relative;
+}
+.step:not(:last-child)::before{
+  content:'';position:absolute;
+  left:25px;top:52px;bottom:0;
+  width:2px;background:var(--card-bg);
+}
+.step-num{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--navy);
+  color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;
+  flex-shrink:0;position:relative;z-index:1;
+}
+.step-body{padding:12px 0 2.5rem}
+.step-title{font-size:15px;font-weight:600;margin-bottom:.4rem}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.step-desc code{
+  font-family:monospace;font-size:12px;
+  background:var(--card-bg);padding:2px 6px;border-radius:4px;
+  color:var(--navy);
+}
+.step-note{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:.6rem;font-size:12px;
+  color:var(--green);background:var(--gr-bg);
+  padding:4px 10px;border-radius:6px;font-weight:500;
+}
+
+/* ── BIG DOWNLOAD ── */
+.cta-section{
+  background:var(--navy);
+  padding:80px 2rem;text-align:center;
+}
+.cta-section h2{color:#fff;margin-bottom:.75rem}
+.cta-section p{color:rgba(255,255,255,.6);margin-bottom:2rem;font-size:15px}
+.btn-dl-white{
+  display:inline-flex;align-items:center;gap:10px;
+  background:#fff;color:var(--navy);
+  font-size:16px;font-weight:700;
+  padding:16px 36px;border-radius:12px;
+  text-decoration:none;
+  transition:opacity .15s, transform .1s;
+  box-shadow:0 4px 24px rgba(0,0,0,0.2);
+}
+.btn-dl-white:hover{opacity:.92;transform:translateY(-2px)}
+.cta-meta{margin-top:1rem;font-size:12px;color:rgba(255,255,255,.45)}
+
+/* ── FOOTER ── */
+footer{
+  padding:2rem;text-align:center;
+  font-size:12px;color:var(--muted);
+  border-top:1px solid var(--border);
+}
+footer a{color:var(--navy);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .hero{grid-template-columns:1fr;min-height:auto;padding-top:90px;gap:2rem}
+  .hero-right{order:-1}
+  .phone{width:150px}
+  .stats-inner{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(2){border-right:none}
+  .stat:nth-child(3){border-top:1px solid var(--border)}
+  .status-row{grid-template-columns:1fr}
+  .nav-links .hide-mob{display:none}
+  nav{padding:0 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-icon">
+     <img src="logo.png" alt="Reefer Control"/>
+      
+    </div>
+    <span class="nav-name">Reefer Control</span>
+  </a>
+  <div class="nav-links">
+    <a href="#screens" class="hide-mob">Screenshots</a>
+    <a href="#features" class="hide-mob">Features</a>
+    <a href="#install" class="hide-mob">Install</a>
+    <a class="btn-nav" href="https://github.com/oceanbytecom/ReeferControl/releases/latest/download/reefer-control.apk">Download APK</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div style="background:var(--bg)">
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+      Android App · Free
+    </div>
+    <h1>Reefer containers<br/>under <em>full control</em></h1>
+    <p class="hero-sub">
+      Monitor temperatures, catch alarms early, track spare parts stock — all from your phone. Built for port reefer inspectors.
+    </p>
+    <a class="btn-download" href="https://github.com/oceanbytecom/ReeferControl/releases/latest/download/reefer-control.apk">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v13M7 11l5 5 5-5"/>
+        <rect x="3" y="18" width="18" height="3" rx="1.5"/>
+      </svg>
+      Download for Android
+    </a>
+    <p class="dl-meta">Free · APK file · <span>v1.0.0</span> · Android 8+</p>
+  </div>
+
+  <div class="hero-right">
+    <div class="phones">
+      <div class="phone">
+        <img src="screen1.png" alt="Container list screen"/>
+      </div>
+      <div class="phone">
+        <img src="screen5.png" alt="Statistics and route screen"/>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat">
+      <span class="stat-n">257</span>
+      <span class="stat-l">Containers per voyage</span>
+    </div>
+    <div class="stat">
+      <span class="stat-n">±0.1°C</span>
+      <span class="stat-l">Temperature precision</span>
+    </div>
+    <div class="stat">
+      <span class="stat-n">Offline</span>
+      <span class="stat-l">No internet required</span>
+    </div>
+    <div class="stat">
+      <span class="stat-n">5 tabs</span>
+      <span class="stat-l">Containers · Reports · Stock · Orders · Settings</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCREENS -->
+<div class="section" id="screens">
+  <p class="section-tag">Screenshots</p>
+  <h2>See it in action</h2>
+  <p class="sub">Real screens from the app — no mockups, no marketing renders.</p>
+  <div class="screens">
+    <div class="screen-card">
+      <img src="screen1.png" alt="Container list"/>
+      <p class="screen-label">Container list</p>
+    </div>
+    <div class="screen-card">
+      <img src="screen3.png" alt="Spare parts stock"/>
+      <p class="screen-label">Spare parts stock</p>
+    </div>
+    <div class="screen-card">
+      <img src="screen2.png" alt="Part detail"/>
+      <p class="screen-label">Part detail & history</p>
+    </div>
+    <div class="screen-card">
+      <img src="screen5.png" alt="Statistics"/>
+      <p class="screen-label">Stats & ship route</p>
+    </div>
+    <div class="screen-card">
+      <img src="screen4.png" alt="Data management"/>
+      <p class="screen-label">Data management</p>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS PREVIEW -->
+<div style="background:var(--bg)">
+<div class="section" style="padding-top:0">
+  <p class="section-tag">Dashboard</p>
+  <h2>At-a-glance reefer status</h2>
+  <p class="sub">The moment you open the app — you know exactly what needs attention.</p>
+  <div class="status-row" style="max-width:480px">
+    <div class="status-card red">
+      <span class="n">2</span>
+      <span class="l">Has Alarm</span>
+    </div>
+    <div class="status-card orange">
+      <span class="n">1</span>
+      <span class="l">Temp. Over Set Point</span>
+    </div>
+    <div class="status-card green">
+      <span class="n">257</span>
+      <span class="l">Normal</span>
+    </div>
+  </div>
+  <p style="font-size:13px;color:var(--muted)">Tap any card to filter the container list instantly.</p>
+</div>
+</div>
+
+<!-- FEATURES -->
+<div class="section" id="features">
+  <p class="section-tag">Features</p>
+  <h2>Everything in one app</h2>
+  <p class="sub">From temperature logging to spare parts inventory — built for the real workflow on deck.</p>
+  <div class="features">
+    <div class="feat">
+      <div class="feat-icon">🌡</div>
+      <h3>Temperature monitoring</h3>
+      <p>Log supply and return temps per container. Spot over-set-point deviations instantly with colour-coded status.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🚨</div>
+      <h3>Alarm management</h3>
+      <p>File alarms with one tap. Timestamps, container ID, and deviation data captured automatically.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📦</div>
+      <h3>Spare parts stock</h3>
+      <p>Search parts by number or description, track quantities, scan barcodes, and log every movement with history.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📋</div>
+      <h3>Orders & reports</h3>
+      <p>Generate and export shift reports and part orders. Import containers and parts from Excel in seconds.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🗺</div>
+      <h3>Ship route tracking</h3>
+      <p>Set your voyage route with ETA/ETD per port. See which port is next and how much time remains.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📡</div>
+      <h3>Database sharing via QR</h3>
+      <p>Share the full database between devices by scanning a QR code. No cloud, no internet, no accounts.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📥</div>
+      <h3>Remote manual updates</h3>
+      <p>Manuals and alarm references update automatically from the internet when new versions are published.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🏆</div>
+      <h3>Achievement system</h3>
+      <p>50 achievements that reward thorough inspections, accurate temperature data, and zero missed containers.</p>
+    </div>
+  </div>
+</div>
+
+<!-- INSTALL -->
+<div style="background:var(--bg)">
+<div class="section" id="install">
+  <p class="section-tag">Installation</p>
+  <h2>Three steps to get started</h2>
+  <p class="sub">No Google Play, no account, no subscription.</p>
+  <div class="steps" style="max-width:560px">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p class="step-title">Download the APK file</p>
+        <p class="step-desc">Tap the Download button — your browser saves <code>reefer-control.apk</code> to your Downloads folder. The file is about 18 MB.</p>
+        <p class="step-note">✓ No Google account needed</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p class="step-title">Allow installation from unknown sources</p>
+        <p class="step-desc">Go to <code>Settings → Security → Install unknown apps</code> and enable it for your browser. You only do this once.</p>
+        <p class="step-note">✓ Works on Android 8 and newer</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p class="step-title">Open the file and tap Install</p>
+        <p class="step-desc">Open <code>reefer-control.apk</code> from your notifications or Files app. Tap Install and the app appears on your home screen.</p>
+        <p class="step-note">✓ Done in under 30 seconds</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- BIG CTA -->
+<div class="cta-section">
+  <h2 style="font-size:clamp(1.5rem,3vw,2.2rem);letter-spacing:-0.02em">Ready to take control?</h2>
+  <p>Free download · Android 8+ · No account required</p>
+  <a class="btn-dl-white" href="https://github.com/oceanbytecom/ReeferControl/releases/latest/download/reefer-control.apk">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3v13M7 11l5 5 5-5"/>
+      <rect x="3" y="18" width="18" height="3" rx="1.5"/>
+    </svg>
+    Download APK · v1.0.0
+  </a>
+  
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Reefer Control · Built for refrigerated cargo inspectors</p>
+  <p style="margin-top:.5rem">
+    <a href="https://github.com/oceanbytecom/ReeferControl/releases">All releases</a> ·
+    <a href="https://github.com/oceanbytecom/ReeferControl/issues">Report an issue</a> ·
+    <a href="https://github.com/oceanbytecom/ReeferControl">GitHub</a>
+  </p>
+</footer>
+
+</body>
+</html>
