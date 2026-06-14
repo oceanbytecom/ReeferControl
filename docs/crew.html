@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reefer Control — Autonomous App for Reefer Engineers</title>
+  <meta name="description" content="Reefer Control — Standalone Android app for marine reefer engineers and electricians. Track temperatures, manage spare parts stock, and read manuals 100% offline mid-ocean."/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Inter',system-ui,sans-serif;
+      background:#0b132b;
+      color:#f4f7fa;
+      font-size:15px;
+      line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    :root{
+      --deep-ocean: #0b132b;
+      --storm-blue: #1c2541;
+      --navy:       #3a506b;
+      --neon-cyan:  #5bc0be;
+      --neon-green: #66bb6a;
+      --neon-red:   #ff5252;
+      --neon-orange:#ffa726;
+      --card-bg:    rgba(28, 37, 65, 0.6);
+      --border:     rgba(91, 192, 190, 0.15);
+      --text-muted: #9aa0b7;
+      --radius:     16px;
+    }
+
+    /* ── NAV ── */
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:100;
+      height:64px;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 2rem;
+      background:rgba(11, 19, 43, 0.85);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .nav-icon{
+      width:36px;height:36px;border-radius:10px;
+      background:linear-gradient(135deg, var(--neon-cyan), var(--navy));
+      display:flex;align-items:center;justify-content:center;
+      font-size: 18px;
+    }
+    .nav-icon img{width:26px;height:26px;object-fit:contain;filter: brightness(0) invert(1);}
+    .nav-brand span{font-size:16px;font-weight:700;color:#fff;letter-spacing:-0.02em}
+    .nav-links{display:flex;gap:2rem;align-items:center}
+    .nav-links a{font-size:13px;font-weight:500;color:var(--text-muted);text-decoration:none;transition:color .2s}
+    .nav-links a:hover{color:var(--neon-cyan)}
+    .btn-nav{
+      background:var(--neon-cyan);color:var(--deep-ocean) !important;
+      font-size:13px;font-weight:700;
+      padding:8px 20px;border-radius:8px;
+      text-decoration:none;
+      transition:all .2s;
+    }
+    .btn-nav:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(91,192,190,0.4)}
+
+    /* ── HERO ── */
+    .hero-wrapper {
+      position: relative;
+      background: radial-gradient(circle at 80% 20%, #1c2541 0%, #0b132b 100%);
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-wrapper::before {
+      content: ''; position: absolute; inset: 0;
+      background-image:
+              linear-gradient(rgba(91, 192, 190, 0.03) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(91, 192, 190, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .hero{
+      padding: 140px 2rem 80px;
+      max-width:1200px;margin:0 auto;
+      display:grid;
+      grid-template-columns:1.2fr 0.8fr;
+      gap:4rem;
+      align-items:center;
+      position: relative; z-index: 2;
+    }
+    .hero-tag{
+      display:inline-flex;align-items:center;gap:8px;
+      font-size:12px;font-weight:600;
+      color:var(--neon-green);
+      background:rgba(102, 187, 106, 0.1);
+      border: 1px solid rgba(102, 187, 106, 0.2);
+      padding: 6px 14px;border-radius:30px;
+      margin-bottom:1.5rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    h1{
+      font-size:clamp(2.1rem, 4.2vw, 3.3rem);
+      font-weight:800;
+      letter-spacing:-0.03em;
+      line-height:1.2;
+      color:#fff;
+      margin-bottom:1.5rem;
+    }
+    h1 em { font-style: normal; color: var(--neon-cyan); text-shadow: 0 0 25px rgba(91,192,190,0.25); }
+    .hero-sub{
+      font-size:17px;color:var(--text-muted);
+      max-width:540px;line-height:1.65;
+      margin-bottom:2.5rem;
+    }
+    .btn-download{
+      display:inline-flex;align-items:center;gap:12px;
+      background:linear-gradient(135deg, var(--neon-cyan), #48acaa);
+      color:var(--deep-ocean);
+      font-size:16px;font-weight:700;
+      padding:16px 32px;
+      border-radius:12px;
+      text-decoration:none;
+      transition:all .2s;
+      box-shadow:0 8px 30px rgba(91,192,190,0.3);
+    }
+    .btn-download:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(91,192,190,0.5)}
+    .dl-meta{
+      margin-top:1.2rem; font-size:12px; color:var(--text-muted);
+      display:flex;align-items:center;gap:8px;
+    }
+
+    /* ── MOCKUPS С ЭФФЕКТОМ КАСАНИЯ ── */
+    .hero-right{ display:flex; justify-content:center; position:relative; }
+    .phones{ display:flex; position:relative; }
+    .phone{
+      width:210px; border-radius:32px; overflow:hidden;
+      box-shadow:0 30px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+      background:var(--storm-blue); flex-shrink:0; position: relative; z-index: 2;
+      transition: transform 0.4s ease;
+    }
+    .phone img{width:100%; display:block;}
+    .phone:first-child{ transform:rotate(-6deg) translateX(30px) translateY(20px); }
+    .phone:last-child{ transform:rotate(4deg) translateX(-10px) translateY(-10px); z-index: 3;}
+    .hero-right:hover .phone:first-child { transform: rotate(-2deg) translateX(10px) translateY(10px); }
+    .hero-right:hover .phone:last-child { transform: rotate(1deg) translateX(0px) translateY(-5px); }
+
+    /* ── ТЕХНИЧЕСКИЙ СТАТС-БАР ── */
+    .stats-bar{ background:var(--storm-blue); border-bottom:1px solid var(--border); }
+    .stats-inner{ max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(4,1fr); }
+    .stat{ padding:2rem 1.5rem; text-align:center; border-right:1px solid var(--border); }
+    .stat:last-child{border-right:none}
+    .stat-n{ font-size:24px; font-weight:800; color:#fff; display:block; }
+    .stat-l{ font-size:11px; color:var(--text-muted); margin-top:4px; display:block; text-transform:uppercase; letter-spacing:0.05em }
+
+    /* ── ОБЩИЕ СЕКЦИИ ── */
+    .section{padding:90px 2rem; max-width:1200px; margin:0 auto}
+    .section-tag{
+      font-size:11px; font-weight:700; letter-spacing:.15em; text-transform:uppercase;
+      color:var(--neon-cyan); margin-bottom:.75rem; display: block;
+    }
+    h2{ font-size:clamp(1.8rem, 3.5vw, 2.3rem); font-weight:800; letter-spacing:-0.02em; margin-bottom:1.2rem; line-height:1.2; color:#fff; }
+    .sub{ font-size:16px; color:var(--text-muted); max-width:750px; line-height:1.7; margin-bottom:3.5rem }
+
+    /* ── FLOW SHOWCASE ── */
+    .showcase-flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; }
+    .flow-card {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.5rem; text-align: center; position: relative; transition: all 0.3s ease;
+    }
+    .flow-card:hover { transform: translateY(-5px); border-color: var(--neon-cyan); background: var(--storm-blue); }
+    .flow-card img {
+      width: 100%; max-width: 190px; border-radius: 14px; margin: 1rem auto; display: block;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05);
+    }
+    .flow-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--navy); color: #fff; font-size: 11px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px; text-transform: uppercase; border: 1px solid var(--border);
+    }
+    .flow-card h4 { color: #fff; font-size: 16px; margin-bottom: 0.5rem; font-weight: 700; }
+    .flow-card p { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+
+    /* ── ТРЕКЕР ОБХОДОВ ── */
+    .gamification-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: center; margin-top: 3rem; }
+    .gamification-text { display: flex; flex-direction: column; gap: 2rem; }
+    .game-feat h4 { color: #fff; font-size: 16px; font-weight: 700; margin-bottom: 0.5rem; }
+    .game-feat p { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+    .gamification-screens { display: flex; gap: 2rem; justify-content: center; }
+    .game-screen-wrapper { text-align: center; flex: 1; max-width: 210px; }
+    .game-screen-wrapper img { width: 100%; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 0.75rem; }
+    .game-screen-wrapper span { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+    /* ── СКРИНШОТЫ СЛАЙДЕР ── */
+    .screens{ display:flex; gap:1.5rem; overflow-x:auto; padding:1rem 0; scroll-snap-type:x mandatory; }
+    .screens::-webkit-scrollbar{height:6px}
+    .screens::-webkit-scrollbar-track{background:var(--deep-ocean)}
+    .screens::-webkit-scrollbar-thumb{background:var(--navy); border-radius:3px}
+    .screen-card{ flex-shrink:0; scroll-snap-align:start; width:210px; }
+    .screen-card img{ width:100%; border-radius:20px; box-shadow:0 15px 40px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); display:block; }
+    .screen-label{ margin-top:.8rem; font-size:13px; font-weight:500; color:var(--text-muted); text-align:center; }
+
+    /* ── МАТРИЦА ФИТЧЕЙ ── */
+    .features{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .feat{ background:var(--card-bg); border: 1px solid var(--border); border-radius:var(--radius); padding:2rem 1.5rem; transition:all .2s; }
+    .feat:hover{ background:var(--storm-blue); border-color: rgba(91,192,190,0.3); transform:translateY(-2px); }
+    .feat-icon{
+      width:44px; height:44px; border-radius:10px; background:rgba(91, 192, 190, 0.1);
+      display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:1.25rem; color: var(--neon-cyan);
+    }
+    .feat h3{font-size:16px; font-weight:700; margin-bottom:.5rem; color:#fff}
+    .feat p{font-size:13px; color:var(--text-muted); line-height:1.6}
+
+    /* ── СИГНАЛЬНЫЕ КАРТЫ ДЕШБОРДА ── */
+    .status-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:2.5rem; }
+    .status-card{ border-radius:var(--radius); padding:1.5rem 1rem; text-align:center; border:1px solid transparent; background: rgba(255,255,255,0.02); }
+    .status-card.red{border-color: rgba(255,82,82,0.3); background: rgba(255,82,82,0.05); color:var(--neon-red)}
+    .status-card.orange{border-color: rgba(255,167,38,0.3); background: rgba(255,167,38,0.05); color:var(--neon-orange)}
+    .status-card.green{border-color: rgba(102,187,106,0.3); background: rgba(102,187,106,0.05); color:var(--neon-green)}
+    .status-card .n{font-size:2.5rem; font-weight:800; display:block; line-height:1.1}
+    .status-card .l{font-size:11px; font-weight:600; margin-top:6px; text-transform:uppercase; letter-spacing:0.05em}
+
+    /* ── ТЕХНОЛОГИЧНЫЕ ШАГИ ── */
+    .steps{display:flex; flex-direction:column; gap:0}
+    .step{ display:grid; grid-template-columns:52px 1fr; gap:0 1.5rem; position:relative; }
+    .step:not(:last-child)::before{ content:''; position:absolute; left:26px; top:52px; bottom:0; width:2px; background:var(--border); }
+    .step-num{
+      width:52px; height:52px; border-radius:50%; background:var(--storm-blue); border: 2px solid var(--neon-cyan); color:var(--neon-cyan);
+      display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; z-index:1; box-shadow: 0 0 15px rgba(91,192,190,0.1);
+    }
+    .step-body{padding:12px 0 3rem}
+    .step-title{font-size:16px; font-weight:700; margin-bottom:.4rem; color:#fff}
+    .step-desc{font-size:13px; color:var(--text-muted); line-height:1.6}
+    .step-note{
+      display:inline-flex; align-items:center; gap:5px; margin-top:.6rem; font-size:11px;
+      color:var(--neon-green); background:rgba(102,187,106,0.1); padding:4px 10px; border-radius:6px; font-weight:600; text-transform:uppercase;
+    }
+
+    /* ── CTA & FOOTER ── */
+    .cta-section{ background: linear-gradient(180deg, var(--deep-ocean) 0%, var(--storm-blue) 100%); padding:100px 2rem; text-align:center; border-top:1px solid var(--border); }
+    .cta-section h2{color:#fff; margin-bottom:1rem}
+    .cta-section p{color:var(--text-muted); margin-bottom:2.5rem; font-size:16px}
+    .btn-dl-white{
+      display:inline-flex;align-items:center;gap:12px; background:var(--neon-cyan); color:var(--deep-ocean);
+      font-size:16px;font-weight:700; padding:18px 40px; border-radius:12px; text-decoration:none; transition:all .2s;
+      box-shadow:0 8px 30px rgba(91,192,190,0.3);
+    }
+    .btn-dl-white:hover{transform:translateY(-2px); box-shadow:0 12px 40px rgba(91,192,190,0.5)}
+    .cta-meta{margin-top:1.25rem; font-size:12px; color:var(--text-muted)}
+    footer{ padding:3rem 2rem; text-align:center; font-size:13px; color:var(--text-muted); border-top:1px solid var(--border); background: #070c1b; }
+    footer a{color:var(--neon-cyan); text-decoration:none}
+    footer a:hover{text-decoration:underline}
+
+    @media(max-width:768px){
+      .hero{grid-template-columns:1fr; padding-top:110px; gap:3rem; text-align:center}
+      .hero-sub{margin: 0 auto 2.5rem;}
+      .hero-right{order:-1}
+      .phone{width:160px}
+      .phone:first-child{transform:rotate(-6deg) translateX(15px)}
+      .phone:last-child{transform:rotate(4deg) translateX(-15px)}
+      .stats-inner{grid-template-columns:repeat(2,1fr)}
+      .stat:nth-child(2){border-right:none}
+      .stat:nth-child(3){border-top:1px solid var(--border)}
+      .showcase-flow { grid-template-columns: 1fr; gap: 3rem; }
+      .gamification-container { grid-template-columns: 1fr; gap: 3rem; }
+      .gamification-screens { gap: 1rem; }
+      .status-row{grid-template-columns:1fr}
+      .nav-links .hide-mob{display:none}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-icon">
+      <img src="logo.png" alt="Reefer Control"/>
+    </div>
+    <span class="nav-name">Reefer Control</span>
+  </a>
+  <div class="nav-links">
+    <a href="#excel-logs" class="hide-mob">Excel & Manifest</a>
+    <a href="#diagnostics" class="hide-mob">Manuals & Alarms</a>
+    <a href="#logistics" class="hide-mob">Spare Parts</a>
+    <a href="#accountability" class="hide-mob">Inspection Tracker</a>
+    <a class="btn-nav" href="https://github.com/oceanbytecom/ReeferControl/releases/latest/download/reefer-control.apk">Download APK</a>
+  </div>
+</nav>
+
+<div class="hero-wrapper">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">✓ 100% Offline · No Cloud</div>
+      <h1>1000+ Reefers.<br/>Middle of the ocean.<br/><em>Get Your Reefers Under Control.</em></h1>
+      <p class="hero-sub">
+        Built by marine engineers for technical crews and port inspectors. Load terminal manifests from Excel instantly, log temperatures on deck, manage your spare parts stock, and browse official manuals in one tap—entirely offline.
+      </p>
+      <div class="hero-actions">
+        <a class="btn-download" href="https://github.com/oceanbytecom/ReeferControl/releases/latest/download/reefer-control.apk">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><rect x="3" y="18" width="18" height="3" rx="1.5"/></svg>
+          Download Android APK
+        </a>
+      </div>
+      <p class="dl-meta">v1.0.0 · Supports Android 8.0 up to 14+</p>
+    </div>
+    <div class="hero-right">
+      <div class="phones">
+        <div class="phone"><img src="screen1.jpg" alt="Manifest view"/></div>
+        <div class="phone"><img src="screen5.jpg" alt="Voyage statistics"/></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat"><span class="stat-n">Excel Sync</span><span class="stat-l">Import Manifests in 3 Seconds</span></div>
+    <div class="stat"><span class="stat-n">Pure Offline</span><span class="stat-l">No internet required on deck</span></div>
+    <div class="stat"><span class="stat-n">Parts Ledger</span><span class="stat-l">Auto-update inventory upon repair</span></div>
+    <div class="stat"><span class="stat-n">Free Core</span><span class="stat-l">No hidden accounts or trials</span></div>
+  </div>
+</div>
+
+
+
+<div class="section" id="excel-logs">
+  <p class="section-tag">Daily Routine Automation</p>
+  <h2>Import Manifests & Export Clean Excel Reports</h2>
+  <p class="sub">Forget manual data entry in freezing weather. Reefer Control allows you to drop messy paper clipboards and structure all your monitoring statistics with seamless spreadsheet integration.</p>
+
+  <div class="showcase-flow">
+    <div class="flow-card">
+      <div class="flow-badge">1. Quick Intake</div>
+      <img src="screen4.jpg" alt="Data hub" />
+      <h4>Instant Excel Import</h4>
+      <p>Load hundreds of container numbers, setpoints, and route paths directly from terminal manifest files in 3 seconds flat.</p>
+    </div>
+    <div class="flow-card">
+      <div class="flow-badge">2. Full Parameters</div>
+      <img src="fullParameters.jpg" alt="Verification view" />
+      <h4>Deep Data Fields</h4>
+      <p>Log comprehensive container profiles including precise supply/return logs, ambient conditions, ventilation status, suction levels, and atmosphere data ($O_2$/$CO_2$).</p>
+    </div>
+    <div class="flow-card">
+      <div class="flow-badge">3. Clean Exports</div>
+      <img src="reportToExport.png" alt="Excel Export" />
+      <h4>One-Click Office Reports</h4>
+      <p>Export pristine, uniform spreadsheets of voyage records, alarms history, and material consumption ready to be emailed straight to office managers.</p>
+    </div>
+  </div>
+</div>
+
+<div style="background:rgba(28, 37, 65, 0.4); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section" id="diagnostics">
+    <p class="section-tag">Troubleshooting Toolkit</p>
+    <h2>Isolate Machinery Faults Right at the Compressor</h2>
+    <p class="sub">Stop walking back to the ship library to browse through heavy binder catalogs. Everything you need to trace breakdown physics is stored inside your pocket.</p>
+
+    <div class="showcase-flow">
+      <div class="flow-card">
+        <div class="flow-badge">Triage</div>
+        <img src="Screenshot_20260614_164048.jpg" alt="Fault triage" />
+        <h4>Immediate Error Readouts</h4>
+        <p>Tap active alarm listings (e.g., `Alarm 100 — Tret open`) to instantly review specific operational descriptions and component failure details.</p>
+      </div>
+      <div class="flow-card">
+        <div class="flow-badge" style="color:var(--neon-orange); border-color:var(--neon-orange)">Pro Extension</div>
+        <img src="Screenshot_20260614_163817.jpg" alt="Smart Guide UI" />
+        <h4>Interactive Smart Guide</h4>
+        <p>Follow clear, step-by-step linear validation sequences (like checking terminal connections on the control cabinet PCB) to replace random trial-and-error diagnostics.</p>
+      </div>
+      <div class="flow-card">
+        <div class="flow-badge">Reference</div>
+        <img src="Screenshot_20260614_163845.jpg" alt="Embedded PDF viewer" />
+        <h4>Integrated Official Manuals</h4>
+        <p>Open original technical instruction blueprints (StarCool, Carrier, Daikin) targeted at the exact sub-assembly text — completely offline.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="logistics">
+  <p class="section-tag">Material Inventory</p>
+  <h2>Automated Stock Control & Requisition Generation</h2>
+  <p class="sub">Keep your spare parts tally accurate without manual tally books. Track component usage dynamically as you execute repairs on the deck layout.</p>
+
+  <div class="showcase-flow">
+    <div class="flow-card">
+      <div class="flow-badge">Allocation</div>
+      <img src="Screenshot_20260614_164813.jpg" alt="Part allocation" />
+      <h4>Linked Stock Sourcing</h4>
+      <p>Link exact spares (`Temperature Sensor I SC`) directly from your custom pre-loaded stock list while completing a maintenance event log.</p>
+    </div>
+    <div class="flow-card">
+      <div class="flow-badge">Inventory Update</div>
+      <img src="Screenshot_20260614_164850.jpg" alt="Stock audit ledger" />
+      <h4>Real-Time Stock Deductions</h4>
+      <p>Material metrics subtract instantly (`In Stock: 0`). Maintains an internal history log detailing the container slot, user signature, and specific fault codes.</p>
+    </div>
+    <div class="flow-card">
+      <div class="flow-badge">Port Delivery</div>
+      <img src="Screenshot_20260614_165219.jpg" alt="Order delivery validation" />
+      <h4>Fast Material Receipts</h4>
+      <p>Check incoming logistics batches at the vessel gangway. Update quantities, check items against previous orders, and attach photo files of bills of lading.</p>
+    </div>
+  </div>
+</div>
+
+<div style="background:rgba(28, 37, 65, 0.4); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section" id="accountability">
+    <p class="section-tag">Route consistency tracker</p>
+    <h2>Keep Your Daily Inspections Organized</h2>
+    <p class="sub">Long voyages can get repetitive. Use the interactive personal task checklist to track your logging progress, monitor inspection history, and make handovers simple.</p>
+
+    <div class="gamification-container">
+      <div class="gamification-text">
+        <div class="game-feat">
+          <h4>📋 Day-to-Day Checklists</h4>
+          <p>The app outlines essential day-to-day operations: closing out complete logs, uploading temperature sheets, and verifying stock levels.</p>
+        </div>
+        <div class="game-feat">
+          <h4>🔥 Verification Streak Metrics</h4>
+          <p>A visual consistency counter encourages inspectors to perform routine inspections regularly, helping prevent logging gaps during a voyage.</p>
+        </div>
+        <div class="game-feat">
+          <h4>🏅 50+ Progress Milestones</h4>
+          <p>Unlock achievements for total container checks, warehouse audits, and flawless logs to build your digital verification record.</p>
+        </div>
+      </div>
+
+      <div class="gamification-screens">
+        <div class="game-screen-wrapper">
+          <img src="Screenshot_20260614_165901.jpg" alt="Daily Tasks & Profile" />
+          <span>Daily Tasks Matrix</span>
+        </div>
+        <div class="game-screen-wrapper">
+          <img src="Screenshot_20260614_165940.jpg" alt="Achievements & Awards" />
+          <span>Inspection Milestones</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="screens">
+  <p class="section-tag">High-Density Interface</p>
+  <h2>Built for Harsh Working Environments</h2>
+  <p class="sub">High-contrast, dense data layouts designed for quick readability under bright sunlight on hatch covers or flashlight sweeps during night watches.</p>
+  <div class="screens">
+    <div class="screen-card"><img src="screen1.jpg" alt="Container list"/><p class="screen-label">Bay Plan / Reefer List</p></div>
+    <div class="screen-card"><img src="screen6.jpg" alt="Dark mode reefer list"/><p class="screen-label">High-Contrast Dark Mode</p></div>
+    <div class="screen-card"><img src="screen3.jpg" alt="Spare parts stock"/><p class="screen-label">Parts Inventory Matrix</p></div>
+    <div class="screen-card"><img src="screen2.jpg" alt="Part detail"/><p class="screen-label">Stock Item Details</p></div>
+    <div class="screen-card"><img src="screen5.jpg" alt="Statistics"/><p class="screen-label">Voyage & Port Route</p></div>
+    <div class="screen-card"><img src="screen4.jpg" alt="Data management"/><p class="screen-label">Data Exchange Hub</p></div>
+    <div class="screen-card"><img src="Screenshot_20260614_164625.jpg" alt="Part master profile"/><p class="screen-label">Part Profile Specs</p></div>
+    <div class="screen-card"><img src="Screenshot_20260614_165151.jpg" alt="Requisition form details"/><p class="screen-label">Requisition Details</p></div>
+    <div class="screen-card"><img src="Screenshot_20260614_165252.jpg" alt="Delivery confirmation receipt"/><p class="screen-label">Receipt Verification</p></div>
+  </div>
+</div>
+
+<div style="background:rgba(28, 37, 65, 0.4); border-top: 1px solid var(--border)">
+  <div class="section" id="install">
+    <p class="section-tag">Deployment</p>
+    <h2>Direct Installation, Zero Overhead</h2>
+    <p class="sub">No Google Play bottlenecks. Download the production-ready APK package directly to your industrial or personal hardware.</p>
+    <div class="steps" style="max-width:600px">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <p class="step-title">Fetch Package</p>
+          <p class="step-desc">Click the link to download <code>reefer-control.apk</code>. Fully standalone package (~18 MB) containing all internal dictionaries.</p>
+          <p class="step-note">✓ Works without Google Services</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <p class="step-title">Authorize Local Installation</p>
+          <p class="step-desc">Navigate to <code>Settings → Security</code> on your phone and temporarily allow installation from your web-browser app.</p>
+          <p class="step-note">✓ Compatible with Android 8.0 up to Android 14+</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <p class="step-title">Launch System</p>
+          <p class="step-desc">Tap the completed download alert or run the APK via any file explorer. App initializes locally on your device.</p>
+          <p class="step-note">✓ Operational in seconds</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cta-section">
+  <h2>Take the Routine Out of Your Reefer Logs</h2>
+  <p>Free, fast, open-source tool built for marine engineers. Keep your records organized.</p>
+  <div class="hero-actions" style="justify-content: center; margin-top: 2rem;">
+    <a class="btn-dl-white" href="https://github.com/oceanbytecom/ReeferControl/releases/latest/download/reefer-control.apk">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><rect x="3" y="18" width="18" height="3" rx="1.5"/></svg>
+      Download APK · v1.0.0
+    </a>
+  </div>
+</div>
+
+<footer>
+  <p><strong>Reefer Control</strong> · High-Reliability Technical Systems for Global Maritime Cold-Chains.</p>
+  <p style="margin-top:1rem">
+    <a href="https://github.com/oceanbytecom/ReeferControl/releases">All Releases</a> ·
+    <a href="https://github.com/oceanbytecom/ReeferControl/issues">Bug Reports</a> ·
+    <a href="https://github.com/oceanbytecom/ReeferControl">GitHub Repository</a>
+  </p>
+</footer>
+
+</body>
+</html>
