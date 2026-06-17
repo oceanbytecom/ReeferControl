@@ -1,7 +1,7 @@
 {
   "files": [
-    { "path": "database/alarmsStarCool.json", "version": 1 },
-    { "path": "database/procedures.json", "version": 1 },
+    { "path": "database/alarmsStarCool.enc", "version": 1 },
+    { "path": "database/procedures.enc", "version": 1 },
     { "path": "manuals/manuals_registry.json", "version": 1 },
     { "path": "manuals/StarCool/CIM_5_English.pdf", "version": 1 },
     { "path": "manuals/StarCool/CIM_6_English.pdf", "version": 1 },
